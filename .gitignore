@@ -4,8 +4,7 @@
 *.dll
 *.so
 *.dylib
-redis-server
-redis-clone
+
 
 # Test binary
 *.test
