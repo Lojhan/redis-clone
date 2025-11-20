@@ -20,7 +20,11 @@ func TestServerStartStop(t *testing.T) {
 
 	time.Sleep(100 * time.Millisecond)
 
-	if !server.running {
+	server.mu.RLock()
+	running := server.running
+	server.mu.RUnlock()
+
+	if !running {
 		t.Fatal("Server should be running")
 	}
 

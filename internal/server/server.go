@@ -87,15 +87,29 @@ func (s *Server) Start(port string) error {
 		return fmt.Errorf("failed to bind to port %s: %w", port, err)
 	}
 
+	s.mu.Lock()
 	s.listener = listener
 	s.running = true
+	s.mu.Unlock()
 
 	log.Printf("Redis server listening on port %s", port)
 
-	for s.running {
+	for {
+		s.mu.RLock()
+		running := s.running
+		s.mu.RUnlock()
+
+		if !running {
+			break
+		}
+
 		conn, err := listener.Accept()
 		if err != nil {
-			if s.running {
+			s.mu.RLock()
+			stillRunning := s.running
+			s.mu.RUnlock()
+
+			if stillRunning {
 				log.Printf("Error accepting connection: %v", err)
 			}
 			continue
@@ -317,10 +331,13 @@ func (c *Client) writeResponse(value resp.Value) error {
 }
 
 func (s *Server) Stop() error {
+	s.mu.Lock()
 	s.running = false
+	listener := s.listener
+	s.mu.Unlock()
 
-	if s.listener != nil {
-		if err := s.listener.Close(); err != nil {
+	if listener != nil {
+		if err := listener.Close(); err != nil {
 			return err
 		}
 	}
