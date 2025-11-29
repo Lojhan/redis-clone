@@ -92,26 +92,20 @@ func (s *Store) PerformEviction() (string, bool) {
 	switch s.evictionConfig.Policy {
 	case EvictionNoEviction:
 		return "", false
-
 	case EvictionAllKeysLRU:
 		return s.evictApproximateLRU(false), true
-
 	case EvictionVolatileLRU:
 		return s.evictApproximateLRU(true), true
-
 	case EvictionAllKeysRandom:
 		return s.evictRandom(false), true
-
 	case EvictionVolatileRandom:
 		return s.evictRandom(true), true
-
 	case EvictionVolatileTTL:
 		return s.evictShortestTTL(), true
-
-	case EvictionAllKeysLFU, EvictionVolatileLFU:
-
-		return s.evictApproximateLRU(s.evictionConfig.Policy == EvictionVolatileLFU), true
-
+	case EvictionAllKeysLFU:
+		return s.evictApproximateLRU(false), true
+	case EvictionVolatileLFU:
+		return s.evictApproximateLRU(true), true
 	default:
 		return "", false
 	}
@@ -125,14 +119,12 @@ func (s *Store) evictApproximateLRU(volatileOnly bool) string {
 
 	var candidates []string
 	if volatileOnly {
-
 		for key := range s.expires {
 			if _, exists := s.data[key]; exists {
 				candidates = append(candidates, key)
 			}
 		}
 	} else {
-
 		for key := range s.data {
 			candidates = append(candidates, key)
 		}
@@ -226,7 +218,6 @@ func (s *Store) evictShortestTTL() string {
 }
 
 func (s *Store) deleteInternal(key string) {
-
 	if s.evictionConfig != nil && s.evictionConfig.memoryTracking {
 		if obj, exists := s.data[key]; exists {
 			s.evictionConfig.currentMemory -= EstimateObjectSize(obj)

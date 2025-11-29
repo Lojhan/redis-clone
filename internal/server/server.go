@@ -50,8 +50,7 @@ func SetNonBlocking(fd int) error {
 }
 
 type Client struct {
-	readBuffer []byte
-
+	readBuffer    []byte
 	inTransaction bool
 	txQueue       []resp.Value
 	watchedKeys   map[string]bool
@@ -211,7 +210,7 @@ func (s *Server) processCommand(client *Client, value resp.Value) resp.Value {
 
 		results := make([]resp.Value, len(client.txQueue))
 		for i, cmd := range client.txQueue {
-			results[i] = s.executeCommand(client, cmd)
+			results[i] = s.executeCommand(cmd)
 		}
 
 		client.inTransaction = false
@@ -257,10 +256,10 @@ func (s *Server) processCommand(client *Client, value resp.Value) resp.Value {
 		return resp.Value{Type: resp.SimpleString, Str: "QUEUED"}
 	}
 
-	return s.executeCommand(client, value)
+	return s.executeCommand(value)
 }
 
-func (s *Server) executeCommand(client *Client, value resp.Value) resp.Value {
+func (s *Server) executeCommand(value resp.Value) resp.Value {
 	cmdName := strings.ToUpper(value.Array[0].Str)
 
 	handler, exists := s.handlers[cmdName]

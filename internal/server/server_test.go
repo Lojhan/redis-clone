@@ -541,11 +541,6 @@ func TestProcessCommandQueueing(t *testing.T) {
 
 func TestExecuteCommandUnknown(t *testing.T) {
 	server := NewServer()
-	client := &Client{
-		readBuffer:    make([]byte, 0),
-		watchedKeys:   make(map[string]bool),
-		inTransaction: false,
-	}
 
 	value := resp.Value{
 		Type: resp.Array,
@@ -554,7 +549,7 @@ func TestExecuteCommandUnknown(t *testing.T) {
 		},
 	}
 
-	result := server.executeCommand(client, value)
+	result := server.executeCommand(value)
 
 	if result.Type != resp.Error {
 		t.Errorf("Expected error for unknown command, got %v", result.Type)
@@ -574,12 +569,6 @@ func TestExecuteCommandSuccess(t *testing.T) {
 		return resp.Value{Type: resp.BulkString, Str: args[0].Str}
 	})
 
-	client := &Client{
-		readBuffer:    make([]byte, 0),
-		watchedKeys:   make(map[string]bool),
-		inTransaction: false,
-	}
-
 	value := resp.Value{
 		Type: resp.Array,
 		Array: []resp.Value{
@@ -588,7 +577,7 @@ func TestExecuteCommandSuccess(t *testing.T) {
 		},
 	}
 
-	result := server.executeCommand(client, value)
+	result := server.executeCommand(value)
 
 	if result.Type != resp.BulkString {
 		t.Errorf("Expected bulk string response, got %v", result.Type)
